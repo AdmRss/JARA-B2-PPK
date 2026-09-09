@@ -19,10 +19,18 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        'name', 'email', 'password', 'role',
     ];
+
+    // Relasi ke project yang dia miliki (Owner)
+    public function ownedLists() {
+        return $this->hasMany(TaskList::class, 'owner_id');
+    }
+
+    // Relasi ke project di mana dia jadi collaborator
+    public function collaboratedLists() {
+        return $this->belongsToMany(TaskList::class, 'task_list_user');
+    }
 
     /**
      * The attributes that should be hidden for serialization.
