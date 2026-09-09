@@ -1,22 +1,47 @@
-# Jara - Advanced To-Do List App
+# Jara - Advanced To-Do List
+Jara adalah sistem manajemen tugas kolaboratif berbasis web yang memungkinkan pengguna untuk mengelola tugas secara terstruktur, menetapkan prioritas, dan memantau tenggat waktu. Sistem ini mendukung fitur kolaborasi tim dalam sebuah daftar tugas (task list) serta menyediakan hak akses administratif untuk pengelolaan pengguna sistem.
 
-Jara adalah aplikasi berbasis web untuk mengelola tugas pribadi maupun tim. Pengguna dapat membuat daftar tugas, menetapkan prioritas dan tenggat waktu, serta mengundang kolaborator. Admin bertugas mengelola akun pengguna di dalam sistem.
+# Tim
+| Nama | NIM | Peran | Detail Tugas |
+| :--- | :--- | :--- | :--- |
+| **Adam Mulya Rasyid** | 24060124140179 | Project Manager | Git Workflow & Orkestrasi Repo |
+| **Nawaal Hanif Mumtaz Arriye** | 24060124120041 | Programmer | Admin & Task Lists |
+| **Arga Yura Danendra** | 24060124140191 | Programmer | Task CRUD & Progress Monitoring |
 
-## Tim Pengembang
-- Adam (Project Manager)
-- Nawaal (Developer 1 - Admin & Task Lists)
-- Arga (Developer 2 - Task CRUD & Progress)
+# User Story
+Sebagai pengguna, saya ingin membuat daftar tugas, menetapkan prioritas waktu, dan mengundang rekan tim ke dalam daftar tersebut, sehingga kami dapat memantau dan berkolaborasi dalam penyelesaian tugas secara real-time dan terorganisir.
 
-## Persyaratan Praktikum (Wajib Dibaca)
-1. Branching: Dilarang keras melakukan push langsung ke `main`. Gunakan branch `feature/nama-fitur`.
-2. Commit Message: Wajib menggunakan format Conventional Commits (Head & Body).
-   - Contoh: `feat(task): tambah fitur prioritas` (baris baru) `Menambahkan kolom enum untuk prioritas tugas.`
-3. Co-Author: Dilarang menggunakan tag *co-author*, termasuk dari AI.
+# Tech Stack
+* Backend: Laravel 12 (PHP)
+* Package Manager: Composer & NPM
+* Database: MySQL
 
-## Instalasi Lokal
-1. `git clone [url-repo]`
-2. `cd jara-app`
-3. `composer install`
-4. `cp .env.example .env`
-5. `php artisan key:generate`
-6. `php artisan migrate`
+**Setup
+# 1. Clone repository & masuk ke folder proyek
+https://github.com/AdmRss/JARA-B2-PPK.git
+cd JARA-B2-PPK
+
+# 2. Install dependency backend dan frontend
+composer install && npm install
+
+# 3. Setup environment dan database
+cp .env.example .env && php artisan key:generate
+
+# 4. Eksekusi migrasi tabel dan seeder akun default
+php artisan migrate --seed
+
+# 5. Jalankan server backend dan frontend secara bersamaan
+php artisan serve & npm run dev
+
+
+# Workflow
+1. Programmer melakukan checkout dari main ke branch fitur (contoh: feature/admin-and-lists).
+2. Implementasi fitur dan lakukan commit dengan format wajib Head & Body (tanpa co-author).
+3. Push ke branch fitur masing-masing. Dilarang keras melakukan push langsung ke main.
+4. Project Manager menarik fitur, menyelesaikan merge conflict, dan menggabungkannya ke main.
+
+# Default Accounts
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **Admin** | admin@jara.test | password |
+| **Owner** | user@jara.test | password |
