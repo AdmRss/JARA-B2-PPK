@@ -11,7 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // TARUH DI SINI BRO
+        Schema::create('task_lists', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->foreignId('owner_id')->constrained('users')->onDelete('cascade');
+            $table->timestamps();
+        });
+
         Schema::create('task_list_user', function (Blueprint $table) {
             $table->id();
             $table->foreignId('task_list_id')->constrained('task_lists')->onDelete('cascade');
@@ -26,5 +33,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('task_list_user');
+        Schema::dropIfExists('task_lists');
     }
 };
