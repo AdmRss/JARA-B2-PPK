@@ -30,6 +30,12 @@
             </div>
         @endif
 
+        @if(session('error'))
+            <div class="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-sm">
+                {{ session('error') }}
+            </div>
+        @endif
+
         @if($errors->any())
             <div class="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-sm">
                 <p class="font-semibold mb-1">Terjadi kesalahan validasi:</p>
@@ -60,35 +66,57 @@
                      style="width: {{ $progress }}%">
                 </div>
             </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5">
+                <div class="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3">
+                    <p class="text-xs uppercase font-semibold text-slate-400">Total Tugas</p>
+                    <p class="text-xl font-bold text-slate-800">{{ $totalTasks }}</p>
+                </div>
+                <div class="rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-3">
+                    <p class="text-xs uppercase font-semibold text-emerald-500">Selesai</p>
+                    <p class="text-xl font-bold text-emerald-700">{{ $completedTasks }}</p>
+                </div>
+                <div class="rounded-lg border border-amber-100 bg-amber-50 px-4 py-3">
+                    <p class="text-xs uppercase font-semibold text-amber-500">Pending</p>
+                    <p class="text-xl font-bold text-amber-700">{{ $totalTasks - $completedTasks }}</p>
+                </div>
+            </div>
         </div>
 
         <!-- SRS-03: Form Tambah Tugas Baru -->
         <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 mb-8">
-            <h2 class="text-md font-semibold text-slate-700 mb-4 flex items-center gap-2">
-                <span>➕</span> Tambah Tugas Baru
-            </h2>
+            <h2 class="text-md font-semibold text-slate-700 mb-4">Tambah Tugas Baru</h2>
             <form action="{{ route('tasks.store', $taskList->id) }}" method="POST" class="space-y-4">
                 @csrf
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Judul Tugas <span class="text-rose-500">*</span></label>
                     <input type="text" name="title" value="{{ old('title') }}" placeholder="Contoh: Membuat Wireframe Desain" required
-                           class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                           class="w-full border {{ $errors->has('title') ? 'border-rose-300 bg-rose-50' : 'border-slate-200' }} rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    @error('title')
+                        <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Prioritas <span class="text-rose-500">*</span></label>
-                        <select name="priority" required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
-                            <option value="low" {{ old('priority') == 'low' ? 'selected' : '' }}>🟢 Low (Rendah)</option>
-                            <option value="mid" {{ old('priority', 'mid') == 'mid' ? 'selected' : '' }}>🟡 Mid (Sedang)</option>
-                            <option value="high" {{ old('priority') == 'high' ? 'selected' : '' }}>🔴 High (Tinggi)</option>
+                        <select name="priority" required class="w-full border {{ $errors->has('priority') ? 'border-rose-300 bg-rose-50' : 'border-slate-200' }} rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                            <option value="low" {{ old('priority') == 'low' ? 'selected' : '' }}>Low (Rendah)</option>
+                            <option value="mid" {{ old('priority', 'mid') == 'mid' ? 'selected' : '' }}>Mid (Sedang)</option>
+                            <option value="high" {{ old('priority') == 'high' ? 'selected' : '' }}>High (Tinggi)</option>
                         </select>
+                        @error('priority')
+                            <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tenggat Waktu (Due Date)</label>
                         <input type="datetime-local" name="due_date" value="{{ old('due_date') }}"
-                               class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                               class="w-full border {{ $errors->has('due_date') ? 'border-rose-300 bg-rose-50' : 'border-slate-200' }} rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        @error('due_date')
+                            <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                        @enderror
                     </div>
                 </div>
 
@@ -129,11 +157,11 @@
 
                                 <!-- Badge Prioritas (SRS-03) -->
                                 @if($task->priority === 'high')
-                                    <span class="bg-rose-50 text-rose-700 border border-rose-200 text-xs px-2 py-0.5 rounded font-semibold">🔴 High</span>
+                                    <span class="bg-rose-50 text-rose-700 border border-rose-200 text-xs px-2 py-0.5 rounded font-semibold">High</span>
                                 @elseif($task->priority === 'mid')
-                                    <span class="bg-amber-50 text-amber-700 border border-amber-200 text-xs px-2 py-0.5 rounded font-semibold">🟡 Mid</span>
+                                    <span class="bg-amber-50 text-amber-700 border border-amber-200 text-xs px-2 py-0.5 rounded font-semibold">Mid</span>
                                 @else
-                                    <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs px-2 py-0.5 rounded font-semibold">🟢 Low</span>
+                                    <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs px-2 py-0.5 rounded font-semibold">Low</span>
                                 @endif
 
                                 <!-- Badge Status (SRS-04) -->
@@ -146,7 +174,7 @@
 
                             <!-- Tenggat Waktu (SRS-03) -->
                             <div class="text-xs text-slate-500 flex items-center gap-1">
-                                <span>📅 Tenggat:</span>
+                                <span>Tenggat:</span>
                                 @if($task->due_date)
                                     <span class="{{ !$task->status && $task->due_date->isPast() ? 'text-rose-600 font-semibold' : 'text-slate-600' }}">
                                         {{ $task->due_date->format('d M Y, H:i') }}
@@ -179,7 +207,6 @@
                 </div>
             @empty
                 <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-100 text-center">
-                    <div class="text-3xl mb-2">📋</div>
                     <h3 class="text-slate-700 font-semibold mb-1">Belum Ada Tugas</h3>
                     <p class="text-slate-400 text-sm">Gunakan form di atas untuk menambahkan tugas pertama ke proyek ini.</p>
                 </div>

@@ -13,15 +13,38 @@
             <a href="/" class="text-sm text-indigo-600 hover:underline">&larr; Kembali ke Beranda</a>
         </div>
 
+        @if(session('success'))
+            <div class="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-sm">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        @if($errors->any())
+            <div class="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-sm">
+                <p class="font-semibold mb-1">Input belum sesuai:</p>
+                <ul class="list-disc list-inside space-y-0.5">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <!-- Form Tambah User -->
         <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 mb-8">
             <h2 class="text-md font-semibold text-slate-700 mb-4">Tambah Pengguna Baru</h2>
             <form action="/admin/users" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 @csrf
-                <input type="text" name="name" placeholder="Nama Lengkap" required class="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <input type="email" name="email" placeholder="Alamat Email" required class="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <input type="password" name="password" placeholder="Password" required class="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <select name="role" class="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                <input type="text" name="name" value="{{ old('name') }}" placeholder="Nama Lengkap" required class="border {{ $errors->has('name') ? 'border-rose-300 bg-rose-50' : 'border-slate-200' }} rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="email" name="email" value="{{ old('email') }}" placeholder="Alamat Email" required class="border {{ $errors->has('email') ? 'border-rose-300 bg-rose-50' : 'border-slate-200' }} rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="password" name="password" placeholder="Password" required class="border {{ $errors->has('password') ? 'border-rose-300 bg-rose-50' : 'border-slate-200' }} rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <select name="role" class="border {{ $errors->has('role') ? 'border-rose-300 bg-rose-50' : 'border-slate-200' }} rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
                 </select>

@@ -18,6 +18,18 @@
             <h1 class="text-xl font-bold text-slate-800 mb-1">Edit Tugas</h1>
             <p class="text-slate-500 text-xs mb-6">Perbarui atribut tugas di dalam proyek <span class="font-semibold text-slate-700">{{ $taskList->name }}</span></p>
 
+            @if(session('success'))
+                <div class="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-sm">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             @if($errors->any())
                 <div class="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-sm">
                     <p class="font-semibold mb-1">Terjadi kesalahan:</p>
@@ -36,23 +48,32 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Judul Tugas <span class="text-rose-500">*</span></label>
                     <input type="text" name="title" value="{{ old('title', $task->title) }}" required
-                           class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                           class="w-full border {{ $errors->has('title') ? 'border-rose-300 bg-rose-50' : 'border-slate-200' }} rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    @error('title')
+                        <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Prioritas <span class="text-rose-500">*</span></label>
-                    <select name="priority" required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
-                        <option value="low" {{ old('priority', $task->priority) == 'low' ? 'selected' : '' }}>🟢 Low (Rendah)</option>
-                        <option value="mid" {{ old('priority', $task->priority) == 'mid' ? 'selected' : '' }}>🟡 Mid (Sedang)</option>
-                        <option value="high" {{ old('priority', $task->priority) == 'high' ? 'selected' : '' }}>🔴 High (Tinggi)</option>
+                    <select name="priority" required class="w-full border {{ $errors->has('priority') ? 'border-rose-300 bg-rose-50' : 'border-slate-200' }} rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                        <option value="low" {{ old('priority', $task->priority) == 'low' ? 'selected' : '' }}>Low (Rendah)</option>
+                        <option value="mid" {{ old('priority', $task->priority) == 'mid' ? 'selected' : '' }}>Mid (Sedang)</option>
+                        <option value="high" {{ old('priority', $task->priority) == 'high' ? 'selected' : '' }}>High (Tinggi)</option>
                     </select>
+                    @error('priority')
+                        <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tenggat Waktu (Due Date)</label>
                     <input type="datetime-local" name="due_date" 
                            value="{{ old('due_date', $task->due_date ? $task->due_date->format('Y-m-d\TH:i') : '') }}"
-                           class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                           class="w-full border {{ $errors->has('due_date') ? 'border-rose-300 bg-rose-50' : 'border-slate-200' }} rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    @error('due_date')
+                        <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div class="pt-2 flex items-center justify-end gap-2">
