@@ -18,7 +18,11 @@ class TaskController extends Controller
         $tasks = $taskList->tasks()->with('assignedUsers')->latest()->get();
         $members = $taskList->allMembers();
         
-        return view('tasks.index', compact('taskList', 'tasks', 'members'));
+        $progress = $taskList->progressPercentage();
+        $totalTasks = $taskList->tasks()->count();
+        $completedTasks = $taskList->tasks()->where('status', true)->count();
+        
+        return view('tasks.index', compact('taskList', 'tasks', 'members', 'progress', 'totalTasks', 'completedTasks'));
     }
 
     public function store(Request $request, TaskList $taskList)
