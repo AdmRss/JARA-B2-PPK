@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class Task extends Model
 {
@@ -31,5 +32,19 @@ class Task extends Model
     public function taskList()
     {
         return $this->belongsTo(TaskList::class, 'task_list_id');
+    }
+
+    public function assignedUsers()
+    {
+        return $this->belongsToMany(User::class, 'task_user');
+    }
+
+    public function deleteWithAssignees()
+    {
+        if (Schema::hasTable('task_user')) {
+            $this->assignedUsers()->detach();
+        }
+
+        $this->delete();
     }
 }

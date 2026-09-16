@@ -21,6 +21,16 @@ class TaskList extends Model
             return $this->hasMany(Task::class);
         }
 
+        public function isOwner($userId): bool
+        {
+            return $this->owner_id === $userId;
+        }
+
+        public function isMember($userId): bool
+        {
+            return $this->isOwner($userId) || $this->collaborators()->where('users.id', $userId)->exists();
+        }
+
         /**
          * Hitung persentase progres penyelesaian tugas (SRS-04).
          * Dilengkapi guard clause untuk menghindari pembagian dengan nol.

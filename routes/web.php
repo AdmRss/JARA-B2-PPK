@@ -19,6 +19,7 @@ Route::delete('/admin/users/{user}', [AdminUserController::class, 'destroy']);
 Route::get('/lists', [TaskListController::class, 'index']);
 Route::post('/lists', [TaskListController::class, 'store']);
 Route::post('/lists/{taskList}/collaborators', [TaskListController::class, 'addCollaborator']);
+Route::delete('/lists/{taskList}', [TaskListController::class, 'destroy']);
 
 // Route SRS-03 & SRS-04 (Tasks & Progress)
 Route::get('/lists/{taskList}/tasks', [TaskController::class, 'index'])->name('tasks.index');
