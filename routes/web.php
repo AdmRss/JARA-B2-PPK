@@ -28,3 +28,16 @@ Route::get('/tasks/{task}/edit', [TaskController::class, 'edit'])->name('tasks.e
 Route::put('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
 Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
 Route::patch('/tasks/{task}/toggle', [TaskController::class, 'toggleStatus'])->name('tasks.toggle');
+
+// ============================================================================
+// SRS-01: Keamanan Inti & Manajemen Admin (Adam Mulya Rasyid)
+// Rute Baru: Admin User Management dengan Proteksi AdminMiddleware & Transaksi Atomik
+// ============================================================================
+use App\Http\Controllers\Admin\UserController as AdminUserModuleController;
+
+Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/users-management', [AdminUserModuleController::class, 'index'])->name('users.index');
+    Route::get('/users/create', [AdminUserModuleController::class, 'create'])->name('users.create');
+    Route::post('/users-management', [AdminUserModuleController::class, 'store'])->name('users.store');
+    Route::delete('/users-management/{user}', [AdminUserModuleController::class, 'destroy'])->name('users.destroy');
+});
