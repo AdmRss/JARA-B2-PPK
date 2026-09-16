@@ -11,8 +11,7 @@ class TaskController extends Controller
 {
     private function authorizeAccess(TaskList $taskList)
     {
-        // Teman kamu mungkin pakai users() atau nama lain. Asumsi: users()
-        $isMember = $taskList->users()->where('users.id', Auth::id())->exists();
+        $isMember = $taskList->isMember(Auth::id());
 
         if (!$isMember) {
             abort(403, 'Anda bukan anggota dari Task List ini.');
