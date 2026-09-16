@@ -23,7 +23,7 @@ class TaskList extends Model
 
         public function isOwner($userId): bool
         {
-            return $this->owner_id === $userId;
+            return $this->owner_id == $userId;
         }
 
         public function isMember($userId): bool

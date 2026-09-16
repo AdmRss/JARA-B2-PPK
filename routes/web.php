@@ -41,3 +41,4 @@ Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function ()
     Route::post('/users-management', [AdminUserModuleController::class, 'store'])->name('users.store');
     Route::delete('/users-management/{user}', [AdminUserModuleController::class, 'destroy'])->name('users.destroy');
 });
+require __DIR__.'/dev.php';
