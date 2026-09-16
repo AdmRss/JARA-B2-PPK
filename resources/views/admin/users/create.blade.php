@@ -124,7 +124,7 @@
                     @error('role')
                         <p class="text-rose-600 text-xs mt-1.5">{{ $message }}</p>
                     @enderror
-                    <p class="text-xs text-slate-400 mt-1">Sesuai design.md: Peran User digunakan untuk membuat task list dan berkolaborasi. Peran Admin berwenang mengelola pengguna.</p>
+                    <p class="text-xs text-slate-400 mt-1">Peran User digunakan untuk membuat task list dan berkolaborasi. Peran Admin berwenang mengelola pengguna.</p>
                 </div>
 
                 <!-- Tombol Aksi -->
