@@ -5,101 +5,80 @@ namespace App\Http\Controllers;
 use App\Models\Task;
 use App\Models\TaskList;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
-    /**
-     * Menampilkan daftar tugas di dalam suatu list beserta progress bar (SRS-03 & SRS-04).
-     */
+    private function authorizeAccess(TaskList $taskList)
+    {
+        // Teman kamu mungkin pakai users() atau nama lain. Asumsi: users()
+        $isMember = $taskList->users()->where('users.id', Auth::id())->exists();
+
+        if (!$isMember) {
+            abort(403, 'Anda bukan anggota dari Task List ini.');
+        }
+    }
+
     public function index(TaskList $taskList)
     {
-        $tasks = $taskList->tasks()->orderBy('status', 'asc')->orderBy('due_date', 'asc')->get();
-        $totalTasks = $tasks->count();
-        $completedTasks = $tasks->where('status', true)->count();
-        $progress = $taskList->progressPercentage();
-
-        return view('tasks.index', compact('taskList', 'tasks', 'totalTasks', 'completedTasks', 'progress'));
+        $this->authorizeAccess($taskList);
+        $tasks = $taskList->tasks()->latest()->get();
+        return view('tasks.index', compact('taskList', 'tasks'));
     }
 
-    /**
-     * Menyimpan tugas baru ke dalam task list (SRS-03).
-     */
     public function store(Request $request, TaskList $taskList)
     {
+        $this->authorizeAccess($taskList);
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'priority' => 'required|in:low,mid,high',
-            'due_date' => 'nullable|date|after_or_equal:today',
+            'due_date' => 'required|date|after_or_equal:today',
         ], [
-            'title.required' => 'Judul tugas wajib diisi.',
-            'priority.required' => 'Prioritas wajib dipilih.',
-            'priority.in' => 'Prioritas harus salah satu dari: Low, Mid, High.',
-            'due_date.after_or_equal' => 'Tenggat waktu tidak boleh tanggal yang sudah lewat.',
+            'due_date.after_or_equal' => 'Batas waktu (Due date) tidak boleh di masa lalu.'
         ]);
 
-        $taskList->tasks()->create([
-            'title' => $validated['title'],
-            'priority' => $validated['priority'],
-            'due_date' => $validated['due_date'] ?? null,
-            'status' => false,
-        ]);
+        $taskList->tasks()->create($validated);
 
-        return redirect()->route('tasks.index', $taskList->id)->with('success', 'Tugas baru berhasil ditambahkan!');
+        return back()->with('success', 'Tugas berhasil ditambahkan!');
     }
 
-    /**
-     * Menampilkan form edit tugas (SRS-03).
-     */
     public function edit(Task $task)
     {
-        $taskList = $task->taskList;
-        return view('tasks.edit', compact('task', 'taskList'));
+        $this->authorizeAccess($task->taskList);
+        return view('tasks.edit', compact('task'));
     }
 
-    /**
-     * Memperbarui data tugas (SRS-03).
-     */
     public function update(Request $request, Task $task)
     {
+        $this->authorizeAccess($task->taskList);
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'priority' => 'required|in:low,mid,high',
-            'due_date' => 'nullable|date',
-        ], [
-            'title.required' => 'Judul tugas wajib diisi.',
-            'priority.required' => 'Prioritas wajib dipilih.',
-            'priority.in' => 'Prioritas harus salah satu dari: Low, Mid, High.',
+            'due_date' => 'required|date|after_or_equal:today',
         ]);
 
-        $task->update([
-            'title' => $validated['title'],
-            'priority' => $validated['priority'],
-            'due_date' => $validated['due_date'] ?? null,
-        ]);
+        $task->update($validated);
 
-        return redirect()->route('tasks.index', $task->task_list_id)->with('success', 'Tugas berhasil diperbarui!');
+        return back()->with('success', 'Tugas berhasil diperbarui!');
     }
 
-    /**
-     * Menghapus tugas dari task list (SRS-03).
-     */
     public function destroy(Task $task)
     {
-        $taskListId = $task->task_list_id;
+        $this->authorizeAccess($task->taskList);
         $task->delete();
-
-        return redirect()->route('tasks.index', $taskListId)->with('success', 'Tugas berhasil dihapus!');
+        return back()->with('success', 'Tugas berhasil dihapus!');
     }
 
-    /**
-     * Toggle status tugas (pending <-> done) dan hitung ulang progress (SRS-04).
-     */
     public function toggleStatus(Task $task)
     {
-        $task->status = !$task->status;
-        $task->save();
+        $this->authorizeAccess($task->taskList);
 
-        $statusText = $task->status ? 'selesai' : 'belum selesai';
-        return back()->with('success', "Status tugas diubah menjadi {$statusText}.");
+        $task->update([
+            'status' => !$task->status
+        ]);
+
+        return back()->with('success', 'Status tugas diperbarui!');
     }
 }
