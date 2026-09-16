@@ -6,13 +6,14 @@ use App\Models\Task;
 use App\Models\TaskList;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 class TaskController extends Controller
 {
     public function index(TaskList $taskList)
     {
-        $this->authorize('viewAny', [Task::class, $taskList]);
+        Gate::authorize('viewAny', [Task::class, $taskList]);
 
         // Eager-load tasks.assignedUsers
         $tasks = $taskList->tasks()->with('assignedUsers')->latest()->get();
@@ -27,7 +28,7 @@ class TaskController extends Controller
 
     public function store(Request $request, TaskList $taskList)
     {
-        $this->authorize('create', [Task::class, $taskList]);
+        Gate::authorize('create', [Task::class, $taskList]);
 
         $memberIds = $taskList->allMembers()->pluck('id')->toArray();
 
@@ -63,7 +64,7 @@ class TaskController extends Controller
 
     public function edit(Task $task)
     {
-        $this->authorize('view', $task);
+        Gate::authorize('view', $task);
         
         $task->load('assignedUsers');
         $taskList = $task->taskList;
@@ -74,7 +75,7 @@ class TaskController extends Controller
 
     public function update(Request $request, Task $task)
     {
-        $this->authorize('update', $task);
+        Gate::authorize('update', $task);
 
         $taskList = $task->taskList;
         $memberIds = $taskList->allMembers()->pluck('id')->toArray();
@@ -108,7 +109,7 @@ class TaskController extends Controller
 
     public function destroy(Task $task)
     {
-        $this->authorize('delete', $task);
+        Gate::authorize('delete', $task);
 
         DB::transaction(function () use ($task) {
             $task->deleteWithAssignees();
@@ -119,7 +120,7 @@ class TaskController extends Controller
 
     public function toggleStatus(Task $task)
     {
-        $this->authorize('toggleStatus', $task);
+        Gate::authorize('toggleStatus', $task);
 
         $task->update([
             'status' => !$task->status
