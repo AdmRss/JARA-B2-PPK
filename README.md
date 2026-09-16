@@ -1,47 +1,40 @@
 # Jara - Advanced To-Do List
-Jara adalah sistem manajemen tugas kolaboratif berbasis web yang memungkinkan pengguna untuk mengelola tugas secara terstruktur, menetapkan prioritas, dan memantau tenggat waktu. Sistem ini mendukung fitur kolaborasi tim dalam sebuah daftar tugas (task list) serta menyediakan hak akses administratif untuk pengelolaan pengguna sistem.
 
-# Tim
-| Nama | NIM | Peran | Detail Tugas |
-| :--- | :--- | :--- | :--- |
-| **Adam Mulya Rasyid** | 24060124140179 | Project Manager | Git Workflow & Orkestrasi Repo |
-| **Nawaal Hanif Mumtaz Arriye** | 24060124120041 | Programmer | Admin & Task Lists |
-| **Arga Yura Danendra** | 24060124140191 | Programmer | Task CRUD & Progress Monitoring |
+Jara adalah sistem manajemen tugas kolaboratif berbasis web yang memungkinkan pengguna untuk mengelola tugas secara terstruktur, menetapkan prioritas, menugaskan anggota tim, dan memantau tenggat waktu. Sistem ini dirancang dengan standar keamanan pencegahan SQL Injection (Prepared Statements), eksekusi data atomik (DB Transactions), dan pengelolaan hak akses tingkat lanjut.
 
-# User Story
-Sebagai pengguna, saya ingin membuat daftar tugas, menetapkan prioritas waktu, dan mengundang rekan tim ke dalam daftar tersebut, sehingga kami dapat memantau dan berkolaborasi dalam penyelesaian tugas secara real-time dan terorganisir.
+## Tim Pengembang
+- **Nawaal Hanif Mumtaz Arriye** (24060124120041) - Project Manager: Git Workflow, Code Review, Security Check & Merge PR
+- **Adam Mulya Rasyid** (24060124140179) - Programmer: SRS-01 (Keamanan Inti & Manajemen Admin)
+- **Muhammad Fahri** (24060124120037) - Programmer: SRS-02 (Manajemen Daftar Tugas & Operasi Atomik)
+- **Arga Yura Danendra** (24060124140191) - Programmer: SRS-03 (Task CRUD, Prioritas, Deadline & Penugasan)
+- **Mutiara Ayu Pramono** (24060123140131) - Programmer: SRS-04 (Integrasi UI/UX & Dashboard Progres)
 
-# Tech Stack
-* Backend: Laravel 12 (PHP)
-* Package Manager: Composer & NPM
-* Database: MySQL
+## User Story Utama
+Sebagai pengguna, saya ingin dapat membuat proyek tugas, mengatur tenggat waktu dan prioritas, serta mengundang anggota tim untuk berkolaborasi, sehingga kami dapat memantau progres pekerjaan secara terorganisir dengan jaminan keamanan data secara menyeluruh.
 
-**Setup
-# 1. Clone repository & masuk ke folder proyek
-https://github.com/AdmRss/JARA-B2-PPK.git
-cd JARA-B2-PPK
+## Tech Stack
+- **Backend:** Laravel 11 (PHP)
+- **Frontend:** Tailwind CSS, Blade Templating
+- **Database:** SQLite (via Eloquent ORM)
 
-# 2. Install dependency backend dan frontend
-composer install && npm install
+## Cara Menjalankan Aplikasi Lokal
+Karena repositori sudah di-clone dan dependensi sudah terinstal, cukup jalankan perintah berikut di terminal:
+```bash
+php artisan serve
 
-# 3. Setup environment dan database
-cp .env.example .env && php artisan key:generate
+Alur Kerja (Workflow) Tim
+- Programmer wajib menarik kode terbaru (git pull origin main).
+- Membuat branch fitur baru dari main (contoh: feature/srs-02-fahri).
+- Menerapkan kode dengan standar keamanan proyek (Eloquent, DB Transaction, Policy).
+- Melakukan commit dan push ke branch fitur. Dilarang melakukan push langsung ke branch main.
+- Membuat Pull Request (PR) di GitHub.
+- Project Manager akan mereview keamanan kode sebelum menyetujui dan melakukan Merge ke branch main.
 
-# 4. Eksekusi migrasi tabel dan seeder akun default
-php artisan migrate --seed
+Akun Default (Testing)
+- Akun Admin
+    Email: admin@jara.test
+    Password: password
 
-# 5. Jalankan server backend dan frontend secara bersamaan
-php artisan serve & npm run dev
-
-
-# Workflow
-1. Programmer melakukan checkout dari main ke branch fitur (contoh: feature/admin-and-lists).
-2. Implementasi fitur dan lakukan commit dengan format wajib Head & Body (tanpa co-author).
-3. Push ke branch fitur masing-masing. Dilarang keras melakukan push langsung ke main.
-4. Project Manager menarik fitur, menyelesaikan merge conflict, dan menggabungkannya ke main.
-
-# Default Accounts
-| Role | Email | Password |
-| :--- | :--- | :--- |
-| **Admin** | admin@jara.test | password |
-| **Owner** | user@jara.test | password |
+- Akun User Biasa
+    Email: arga@jara.test
+    Password: password

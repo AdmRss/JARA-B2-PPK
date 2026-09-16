@@ -1,69 +1,70 @@
+---
+
+#### 📄 Isi untuk file `desain.md`
+```markdown
 # Design Document: Jara
 
 ## 1. Identitas & Anggota Proyek
 - **Nama Proyek:** Jara (Advanced To-Do List)
-- **Deskripsi Singkat:** Sistem manajemen tugas kolaboratif berbasis web untuk mengelola tugas secara terstruktur, menetapkan prioritas, dan memantau tenggat waktu.
+- **Deskripsi Singkat:** Sistem manajemen tugas kolaboratif berbasis web untuk mengelola tugas secara terstruktur, menetapkan prioritas, menugaskan tim, dan memantau tenggat waktu secara real-time.
 
-| Nama | NIM | Peran | Fokus Tanggung Jawab |
+| Nama | NIM | Peran | Fokus Tanggung Jawab (SRS) |
 | :--- | :--- | :--- | :--- |
-| **Adam Mulya Rasyid** | 24060124140179 | Project Manager | Pengelolaan Repositori, Git Workflow, Merge & Manajemen Konflik, Dokumentasi (README & Design). |
-| **Nawaal Hanif Mumtaz Arriye** | 24060124120041 | Programmer (Dev 1) | Modul Manajemen Akun (Admin) & Manajemen Wadah Tugas (Task List & Kolaborator). |
-| **Arga Yura Danendra** | 24060124140191 | Programmer (Dev 2) | Modul CRUD Item Tugas (Task) serta Logika Pelacakan Status & Progres (Progress Tracking). |
+| **Nawaal Hanif M. A.** | 24060124120041 | Project Manager | Orkestrasi Repositori, Git Workflow, Code Reviewer, Verifikasi Keamanan Query & Merge Pull Request. |
+| **Adam Mulya Rasyid** | 24060124140179 | Programmer 1 | **SRS-01**: Manajemen Akun (Tambah/Hapus Pengguna oleh Admin) dan Sistem Hak Akses (Policies/Gates). |
+| **Muhammad Fahri** | 24060124120037 | Programmer 2 | **SRS-02**: CRUD Task List, Kolaborasi via Pivot Table, dan Logika Hapus List secara Atomik (DB Transaction). |
+| **Arga Yura Danendra** | 24060124140191 | Programmer 3 | **SRS-03**: CRUD Task, Penugasan Spesifik, Prioritas, Tenggat Waktu (Deadline), dan Status Penyelesaian. |
+| **Mutiara Ayu Pramono** | 24060123140131 | Programmer 4 | **SRS-04**: Implementasi Antarmuka UI/UX (Tailwind CSS) dan Visualisasi Dashboard Progres Tim. |
 
 ---
 
-## 2. Deskripsi Sistem & Tech Stack
-Jara adalah perangkat lunak manajemen tugas kolaboratif. Aplikasi ini memisahkan hierarki data menjadi "List" (proyek/daftar) dan "Task" (item tugas). Fitur unggulan dari sistem ini adalah pembagian kepemilikan proyek, di mana kreator list dapat mengizinkan entitas pengguna lain untuk bekerja di ranah list yang sama.
-
-- **Framework & Bahasa:** Laravel 12 (PHP), Composer, NPM, JavaScript, HTML/CSS
-- **Database:** MySQL
-- **Frontend:** Blade Templating Engine + Vite
-- **Pola Arsitektur:** MVC (Model-View-Controller) standar Laravel dengan pemisahan logika rute, pengontrol, dan basis data relasional.
+## 2. Deskripsi Arsitektur Sistem
+Jara menggunakan pola arsitektur **MVC (Model-View-Controller)** standar Laravel. Sistem memisahkan hierarki data menjadi entitas "List" (wadah proyek) dan "Task" (tugas satuan). Sistem ini diwajibkan menggunakan perlindungan Middleware, *Prepared Statements* via Eloquent untuk mencegah *SQL Injection*, serta *Database Transactions* untuk menjaga integritas data lintas tabel saat penghapusan.
 
 ---
 
 ## 3. Aktor & Hak Akses
-1. **Admin:** Bertanggung jawab atas integritas data pengguna. Dapat menambah (registrasi internal) dan menghapus pengguna.
-2. **Owner:** Pengguna yang membuat *Task List*. Memiliki hak untuk mengedit atribut list dan mengelola *collaborator*.
-3. **Collaborator:** Pengguna yang di-assign ke dalam sebuah *Task List*. Dapat berinteraksi dengan tugas di dalamnya (buat, edit, ubah status).
+1. **Admin Sistem:** Bertanggung jawab penuh terhadap akun. Memiliki akses eksklusif ke rute/fitur tambah dan hapus pengguna sistem.
+2. **Owner (Pemilik Proyek):** Kreator dari sebuah *Task List*. Satu-satunya yang berhak menambah kolaborator ke dalam proyek dan menghapus daftar miliknya.
+3. **Collaborator (Anggota Tim):** Pengguna yang diundang ke dalam *Task List*. Berhak melihat isi proyek, membuat/mengedit tugas, ditugaskan ke sebuah task, dan memperbarui status penyelesaian tugas.
 
 ---
 
 ## 4. Rancangan Database (Skema Relasional)
-Sistem menggunakan 4 tabel utama:
+
+Sistem menggunakan 4 tabel utama yang saling berelasi:
 
 ### A. Tabel `users`
-- `id` (PK, BigInt)
-- `name` (string)
-- `email` (string, unique)
-- `password` (string)
-- `role` (enum: `'admin'`, `'user'`)
-- `timestamps`
+- `id` (Primary Key)
+- `name` (String)
+- `email` (String, Unique)
+- `password` (String, Hashed)
+- `role` (Enum: `'admin'`, `'user'`)
 
 ### B. Tabel `task_lists`
-- `id` (PK, BigInt)
-- `name` (string)
-- `description` (text, nullable)
-- `owner_id` (FK -> `users.id`)
-- `timestamps`
+- `id` (Primary Key)
+- `name` (String)
+- `description` (Text, Nullable)
+- `owner_id` (Foreign Key -> `users.id`)
 
-### C. Tabel `task_list_user` (Pivot Kolaborasi)
-- `task_list_id` (FK -> `task_lists.id`)
-- `user_id` (FK -> `users.id`)
-- `timestamps`
+### C. Tabel Pivot `task_list_user` (Sistem Kolaborasi)
+- `task_list_id` (Foreign Key -> `task_lists.id`)
+- `user_id` (Foreign Key -> `users.id`)
 
 ### D. Tabel `tasks`
-- `id` (PK, BigInt)
-- `task_list_id` (FK -> `task_lists.id`)
-- `title` (string)
-- `priority` (enum: `'low'`, `'mid'`, `'high'`)
-- `due_date` (datetime, nullable)
-- `status` (boolean: `false` = pending, `true` = done)
-- `timestamps`
+- `id` (Primary Key)
+- `task_list_id` (Foreign Key -> `task_lists.id`)
+- `title` (String)
+- `priority` (Enum: `'rendah'`, `'sedang'`, `'tinggi'`)
+- `due_date` (DateTime, Nullable)
+- `assignee_id` (Foreign Key -> `users.id`, Nullable)
+- `status` (Boolean: `false` = pending, `true` = done)
 
 ---
 
-## 5. Tahapan Branching & Aturan Tim
-- **Nawaal:** Membuat branch `feature/admin-and-lists`. Fokus mengelola tabel `users`, `task_lists`, dan tabel pivot.
-- **Arga:** Membuat branch `feature/task-and-progress`. Fokus pada operasi tabel `tasks` serta logika agregasi persentase progres di controller.
-- **Catatan Penting:** Dilarang keras melakukan *commit* atau *push* langsung pada branch `main`. Seluruh perubahan wajib melalui *branch* fitur masing-masing untuk di-*merge* oleh Project Manager.
+## 5. Tahapan Branching & Aturan Pull Request (PR)
+- Seluruh Programmer wajib bekerja di branch dengan format `feature/nama-fitur` atau `feature/srs-xx-nama`.
+- **Aturan Review PM:** Setiap Pull Request yang masuk akan diaudit oleh Project Manager. PR akan langsung ditolak (*Request Changes*) jika ditemukan:
+  1. Penggunaan `DB::raw()` pada input pengguna.
+  2. Ketiadaan fungsi `DB::transaction()` pada operasi hapus relasional.
+  3. Logika controller yang mengabaikan pengecekan otorisasi pengguna.
