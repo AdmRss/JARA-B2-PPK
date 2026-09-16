@@ -50,17 +50,6 @@
                     </div>
                 </div>
 
-                <!-- Mini Progres Tugas (SRS-04) -->
-                <div class="mt-3">
-                    <div class="flex justify-between items-center text-xs mb-1">
-                        <span class="text-slate-500 font-medium">Progres:</span>
-                        <span class="font-bold text-indigo-600">{{ $list->progressPercentage() }}%</span>
-                    </div>
-                    <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                        <div class="bg-indigo-600 h-2 rounded-full transition-all duration-300" style="width: {{ $list->progressPercentage() }}%"></div>
-                    </div>
-                </div>
-
                 <div class="mt-4 pt-4 border-t border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Kolaborator:</span>
