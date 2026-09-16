@@ -55,6 +55,19 @@
                            class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
 
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tugaskan Ke (Opsional)</label>
+                    <select name="assignees[]" multiple class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white h-24">
+                        @foreach($members as $member)
+                            <option value="{{ $member->id }}"
+                                {{ in_array($member->id, old('assignees', $task->assignedUsers->pluck('id')->toArray())) ? 'selected' : '' }}>
+                                {{ $member->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="text-xs text-slate-400 mt-1">Tahan Ctrl/Cmd untuk memilih beberapa anggota.</p>
+                </div>
+
                 <div class="pt-2 flex items-center justify-end gap-2">
                     <a href="{{ route('tasks.index', $task->task_list_id) }}" 
                        class="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-lg text-sm font-medium transition">

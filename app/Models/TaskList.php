@@ -35,4 +35,31 @@ class TaskList extends Model
             $completed = $this->tasks()->where('status', true)->count();
             return (int) round(($completed / $total) * 100);
         }
+
+        /**
+         * Ambil semua anggota list (owner + kolaborator) untuk dropdown assignee.
+         * Menggunakan unique() untuk menghindari duplikat jika owner juga ada di tabel pivot.
+         */
+        public function allMembers()
+        {
+            $collaboratorIds = $this->collaborators()->pluck('users.id');
+            $allIds = $collaboratorIds->push($this->owner_id)->unique();
+            return User::whereIn('id', $allIds)->get();
+        }
+
+        // ============================================================
+        // 🔧 STUB SEMENTARA — HAPUS setelah branch SRS-02 (Fahri) di-merge
+        // Method asli: feature/admin-and-lists (Fahri)
+        // ============================================================
+
+        public function isOwner($userId): bool
+        {
+            return $this->owner_id === $userId;
+        }
+
+        public function isMember($userId): bool
+        {
+            return $this->isOwner($userId)
+                || $this->collaborators()->where('users.id', $userId)->exists();
+        }
     }

@@ -33,6 +33,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Relasi ke task-task di mana user ini di-assign (SRS-03).
+     */
+    public function assignedTasks()
+    {
+        return $this->belongsToMany(Task::class, 'task_user');
+    }
+
+    /**
      * The attributes that should be hidden for serialization.
      *
      * @var list<string>

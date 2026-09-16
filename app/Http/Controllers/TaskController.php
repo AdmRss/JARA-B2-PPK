@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Task;
 use App\Models\TaskList;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 class TaskController extends Controller
 {
@@ -13,12 +16,20 @@ class TaskController extends Controller
      */
     public function index(TaskList $taskList)
     {
-        $tasks = $taskList->tasks()->orderBy('status', 'asc')->orderBy('due_date', 'asc')->get();
+        // --- Otorisasi (🔗 memanggil isMember dari SRS-02) ---
+        Gate::authorize('viewAny', [Task::class, $taskList]);
+
+        $tasks = $taskList->tasks()->with('assignedUsers')
+            ->orderBy('status', 'asc')
+            ->orderBy('due_date', 'asc')
+            ->get();
+
         $totalTasks = $tasks->count();
         $completedTasks = $tasks->where('status', true)->count();
         $progress = $taskList->progressPercentage();
+        $members = $taskList->allMembers();
 
-        return view('tasks.index', compact('taskList', 'tasks', 'totalTasks', 'completedTasks', 'progress'));
+        return view('tasks.index', compact('taskList', 'tasks', 'totalTasks', 'completedTasks', 'progress', 'members'));
     }
 
     /**
@@ -26,23 +37,39 @@ class TaskController extends Controller
      */
     public function store(Request $request, TaskList $taskList)
     {
+        // --- Otorisasi (🔗 memanggil isMember dari SRS-02) ---
+        Gate::authorize('create', [Task::class, $taskList]);
+
+        // --- Validasi (assignees di-scope ke anggota list) ---
+        $memberIds = $taskList->allMembers()->pluck('id')->toArray();
+
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'priority' => 'required|in:low,mid,high',
-            'due_date' => 'nullable|date|after_or_equal:today',
+            'title'       => 'required|string|max:255',
+            'priority'    => 'required|in:low,mid,high',
+            'due_date'    => 'nullable|date|after_or_equal:today',
+            'assignees'   => 'nullable|array',
+            'assignees.*' => ['integer', Rule::in($memberIds)],
         ], [
-            'title.required' => 'Judul tugas wajib diisi.',
-            'priority.required' => 'Prioritas wajib dipilih.',
-            'priority.in' => 'Prioritas harus salah satu dari: Low, Mid, High.',
+            'title.required'          => 'Judul tugas wajib diisi.',
+            'priority.required'       => 'Prioritas wajib dipilih.',
+            'priority.in'             => 'Prioritas harus salah satu dari: Low, Mid, High.',
             'due_date.after_or_equal' => 'Tenggat waktu tidak boleh tanggal yang sudah lewat.',
+            'assignees.*.in'          => 'User yang dipilih bukan anggota Daftar Tugas ini.',
         ]);
 
-        $taskList->tasks()->create([
-            'title' => $validated['title'],
-            'priority' => $validated['priority'],
-            'due_date' => $validated['due_date'] ?? null,
-            'status' => false,
-        ]);
+        // --- Transaction: create task + sync assignees ---
+        DB::transaction(function () use ($taskList, $validated) {
+            $task = $taskList->tasks()->create([
+                'title'    => $validated['title'],
+                'priority' => $validated['priority'],
+                'due_date' => $validated['due_date'] ?? null,
+                'status'   => false,
+            ]);
+
+            if (!empty($validated['assignees'])) {
+                $task->assignedUsers()->sync($validated['assignees']);
+            }
+        });
 
         return redirect()->route('tasks.index', $taskList->id)->with('success', 'Tugas baru berhasil ditambahkan!');
     }
@@ -52,8 +79,14 @@ class TaskController extends Controller
      */
     public function edit(Task $task)
     {
+        // --- Otorisasi (🔗 memanggil isMember dari SRS-02) ---
+        Gate::authorize('view', $task);
+
         $taskList = $task->taskList;
-        return view('tasks.edit', compact('task', 'taskList'));
+        $task->load('assignedUsers');
+        $members = $taskList->allMembers();
+
+        return view('tasks.edit', compact('task', 'taskList', 'members'));
     }
 
     /**
@@ -61,21 +94,37 @@ class TaskController extends Controller
      */
     public function update(Request $request, Task $task)
     {
+        // --- Otorisasi (🔗 memanggil isMember dari SRS-02) ---
+        Gate::authorize('update', $task);
+
+        $taskList = $task->taskList;
+
+        // --- Validasi (assignees di-scope ke anggota list) ---
+        $memberIds = $taskList->allMembers()->pluck('id')->toArray();
+
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'priority' => 'required|in:low,mid,high',
-            'due_date' => 'nullable|date',
+            'title'       => 'required|string|max:255',
+            'priority'    => 'required|in:low,mid,high',
+            'due_date'    => 'nullable|date',
+            'assignees'   => 'nullable|array',
+            'assignees.*' => ['integer', Rule::in($memberIds)],
         ], [
-            'title.required' => 'Judul tugas wajib diisi.',
+            'title.required'    => 'Judul tugas wajib diisi.',
             'priority.required' => 'Prioritas wajib dipilih.',
-            'priority.in' => 'Prioritas harus salah satu dari: Low, Mid, High.',
+            'priority.in'       => 'Prioritas harus salah satu dari: Low, Mid, High.',
+            'assignees.*.in'    => 'User yang dipilih bukan anggota Daftar Tugas ini.',
         ]);
 
-        $task->update([
-            'title' => $validated['title'],
-            'priority' => $validated['priority'],
-            'due_date' => $validated['due_date'] ?? null,
-        ]);
+        // --- Transaction: update task + sync assignees ---
+        DB::transaction(function () use ($task, $validated) {
+            $task->update([
+                'title'    => $validated['title'],
+                'priority' => $validated['priority'],
+                'due_date' => $validated['due_date'] ?? null,
+            ]);
+
+            $task->assignedUsers()->sync($validated['assignees'] ?? []);
+        });
 
         return redirect()->route('tasks.index', $task->task_list_id)->with('success', 'Tugas berhasil diperbarui!');
     }
@@ -85,8 +134,15 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
+        // --- Otorisasi (🔗 memanggil isMember dari SRS-02) ---
+        Gate::authorize('delete', $task);
+
         $taskListId = $task->task_list_id;
-        $task->delete();
+
+        // --- Transaction: hapus assignees + task secara atomik ---
+        DB::transaction(function () use ($task) {
+            $task->deleteWithAssignees();
+        });
 
         return redirect()->route('tasks.index', $taskListId)->with('success', 'Tugas berhasil dihapus!');
     }
@@ -96,6 +152,9 @@ class TaskController extends Controller
      */
     public function toggleStatus(Task $task)
     {
+        // --- Otorisasi (🔗 memanggil isMember dari SRS-02) ---
+        Gate::authorize('toggleStatus', $task);
+
         $task->status = !$task->status;
         $task->save();
 
