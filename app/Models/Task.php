@@ -16,7 +16,6 @@ class Task extends Model
         'priority',
         'due_date',
         'status',
-        'assignee_id',
     ];
 
     protected $casts = [
@@ -29,8 +28,14 @@ class Task extends Model
         return $this->belongsTo(TaskList::class);
     }
 
-    public function assignee(): BelongsTo
+    public function assignedUsers()
     {
-        return $this->belongsTo(User::class, 'assignee_id');
+        return $this->belongsToMany(User::class, 'task_user');
+    }
+
+    public function deleteWithAssignees(): void
+    {
+        $this->assignedUsers()->detach();
+        $this->delete();
     }
 }

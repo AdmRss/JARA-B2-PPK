@@ -2,17 +2,14 @@
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\Task;
 use App\Models\TaskList;
-use Illuminate\Auth\Access\HandlesAuthorization;
+use App\Models\User;
 
 class TaskPolicy
 {
-    use HandlesAuthorization;
-
     /**
-     * Bypassing untuk Admin: Administrator memiliki akses penuh ke seluruh task.
+     * Bypassing untuk Admin
      */
     public function before(User $user, string $ability): ?bool
     {
@@ -24,96 +21,50 @@ class TaskPolicy
     }
 
     /**
-     * Menentukan apakah user boleh melihat daftar task.
+     * Bolehkah user melihat daftar task di list ini?
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user, TaskList $taskList): bool
     {
-        return true;
+        return $taskList->isMember($user->id);
     }
 
     /**
-     * Menentukan apakah user boleh melihat task tertentu.
-     * Hak akses: Owner list induk atau Collaborator list induk.
+     * Bolehkah user membuat task baru di list ini?
+     */
+    public function create(User $user, TaskList $taskList): bool
+    {
+        return $taskList->isMember($user->id);
+    }
+
+    /**
+     * Bolehkah user melihat/mengedit task ini?
      */
     public function view(User $user, Task $task): bool
     {
-        $taskList = $task->taskList;
-        if (!$taskList) {
-            return false;
-        }
-
-        return $user->id === $taskList->owner_id ||
-               $taskList->collaborators()->where('users.id', $user->id)->exists();
+        return $task->taskList->isMember($user->id);
     }
 
     /**
-     * Menentukan apakah user boleh membuat task baru pada sebuah TaskList.
-     * Hak akses: Owner list induk atau Collaborator list induk.
-     */
-    public function create(User $user, ?TaskList $taskList = null): bool
-    {
-        if (!$taskList) {
-            return true;
-        }
-
-        return $user->id === $taskList->owner_id ||
-               $taskList->collaborators()->where('users.id', $user->id)->exists();
-    }
-
-    /**
-     * Menentukan apakah user boleh memperbarui/mengedit task.
-     * Sesuai design.md: Collaborator & Owner dapat berinteraksi dengan tugas (edit).
+     * Bolehkah user mengupdate task ini?
      */
     public function update(User $user, Task $task): bool
     {
-        $taskList = $task->taskList;
-        if (!$taskList) {
-            return false;
-        }
-
-        return $user->id === $taskList->owner_id ||
-               $taskList->collaborators()->where('users.id', $user->id)->exists();
+        return $task->taskList->isMember($user->id);
     }
 
     /**
-     * Menentukan apakah user boleh mengubah status task (toggle pending <-> done).
-     * Sesuai design.md: Collaborator & Owner dapat mengubah status tugas.
-     */
-    public function toggleStatus(User $user, Task $task): bool
-    {
-        $taskList = $task->taskList;
-        if (!$taskList) {
-            return false;
-        }
-
-        return $user->id === $taskList->owner_id ||
-               $taskList->collaborators()->where('users.id', $user->id)->exists();
-    }
-
-    /**
-     * Menentukan apakah user boleh menghapus task.
-     * Hak akses: Hanya Owner dari task list (atau Admin).
+     * Bolehkah user menghapus task ini?
      */
     public function delete(User $user, Task $task): bool
     {
-        $taskList = $task->taskList;
-        if (!$taskList) {
-            return false;
-        }
-
-        return $user->id === $taskList->owner_id;
+        return $task->taskList->isMember($user->id);
     }
 
     /**
-     * Menentukan apakah user boleh mengelola task secara penuh.
+     * Bolehkah user toggle status task ini?
      */
-    public function manage(User $user, Task $task): bool
+    public function toggleStatus(User $user, Task $task): bool
     {
-        $taskList = $task->taskList;
-        if (!$taskList) {
-            return false;
-        }
-
-        return $user->id === $taskList->owner_id;
+        return $task->taskList->isMember($user->id);
     }
 }

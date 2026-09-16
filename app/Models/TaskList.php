@@ -45,4 +45,11 @@ class TaskList extends Model
             $completed = $this->tasks()->where('status', true)->count();
             return (int) round(($completed / $total) * 100);
         }
+
+        public function allMembers()
+        {
+            $collaboratorIds = $this->collaborators()->pluck('users.id');
+            $allIds = $collaboratorIds->push($this->owner_id)->unique();
+            return User::whereIn('id', $allIds)->get();
+        }
     }
