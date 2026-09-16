@@ -9,62 +9,37 @@ use App\Models\User;
 class TaskPolicy
 {
     /**
-     * Bypassing untuk Admin
+     * Bypassing untuk sementara karena sistem Auth belum ada,
+     * jadi SEMUA tamu (guest) maupun user yang login diizinkan mengakses fitur ini.
      */
-    public function before(User $user, string $ability): ?bool
-    {
-        if ((isset($user->role) && $user->role === 'admin') || (isset($user->is_admin) && $user->is_admin)) {
-            return true;
-        }
 
-        return null;
+    public function viewAny(?User $user, TaskList $taskList): bool
+    {
+        return true;
     }
 
-    /**
-     * Bolehkah user melihat daftar task di list ini?
-     */
-    public function viewAny(User $user, TaskList $taskList): bool
+    public function create(?User $user, TaskList $taskList): bool
     {
-        return $taskList->isMember($user->id);
+        return true;
     }
 
-    /**
-     * Bolehkah user membuat task baru di list ini?
-     */
-    public function create(User $user, TaskList $taskList): bool
+    public function view(?User $user, Task $task): bool
     {
-        return $taskList->isMember($user->id);
+        return true;
     }
 
-    /**
-     * Bolehkah user melihat/mengedit task ini?
-     */
-    public function view(User $user, Task $task): bool
+    public function update(?User $user, Task $task): bool
     {
-        return $task->taskList->isMember($user->id);
+        return true;
     }
 
-    /**
-     * Bolehkah user mengupdate task ini?
-     */
-    public function update(User $user, Task $task): bool
+    public function delete(?User $user, Task $task): bool
     {
-        return $task->taskList->isMember($user->id);
+        return true;
     }
 
-    /**
-     * Bolehkah user menghapus task ini?
-     */
-    public function delete(User $user, Task $task): bool
+    public function toggleStatus(?User $user, Task $task): bool
     {
-        return $task->taskList->isMember($user->id);
-    }
-
-    /**
-     * Bolehkah user toggle status task ini?
-     */
-    public function toggleStatus(User $user, Task $task): bool
-    {
-        return $task->taskList->isMember($user->id);
+        return true;
     }
 }
