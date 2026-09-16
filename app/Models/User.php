@@ -54,4 +54,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function assignedTasks()
+    {
+        return $this->belongsToMany(Task::class, 'task_user');
+    }
 }

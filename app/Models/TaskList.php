@@ -23,7 +23,7 @@ class TaskList extends Model
 
         public function isOwner($userId): bool
         {
-            return $this->owner_id === $userId;
+            return $this->owner_id == $userId;
         }
 
         public function isMember($userId): bool
@@ -44,5 +44,12 @@ class TaskList extends Model
 
             $completed = $this->tasks()->where('status', true)->count();
             return (int) round(($completed / $total) * 100);
+        }
+
+        public function allMembers()
+        {
+            $collaboratorIds = $this->collaborators()->pluck('users.id');
+            $allIds = $collaboratorIds->push($this->owner_id)->unique();
+            return User::whereIn('id', $allIds)->get();
         }
     }

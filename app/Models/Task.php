@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Task extends Model
 {
@@ -18,20 +18,14 @@ class Task extends Model
         'status',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'status' => 'boolean',
-            'due_date' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'status' => 'boolean',
+        'due_date' => 'datetime',
+    ];
 
-    /**
-     * Relasi ke TaskList pemilik tugas ini.
-     */
-    public function taskList()
+    public function taskList(): BelongsTo
     {
-        return $this->belongsTo(TaskList::class, 'task_list_id');
+        return $this->belongsTo(TaskList::class);
     }
 
     public function assignedUsers()
@@ -39,12 +33,9 @@ class Task extends Model
         return $this->belongsToMany(User::class, 'task_user');
     }
 
-    public function deleteWithAssignees()
+    public function deleteWithAssignees(): void
     {
-        if (Schema::hasTable('task_user')) {
-            $this->assignedUsers()->detach();
-        }
-
+        $this->assignedUsers()->detach();
         $this->delete();
     }
 }
