@@ -16,6 +16,7 @@ class Task extends Model
         'priority',
         'due_date',
         'status',
+        'assignee_id',
     ];
 
     protected $casts = [
@@ -26,5 +27,10 @@ class Task extends Model
     public function taskList(): BelongsTo
     {
         return $this->belongsTo(TaskList::class);
+    }
+
+    public function assignee(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assignee_id');
     }
 }

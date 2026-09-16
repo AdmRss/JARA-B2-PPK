@@ -11,10 +11,16 @@ class TaskController extends Controller
 {
     private function authorizeAccess(TaskList $taskList)
     {
-        $isMember = $taskList->isMember(Auth::id());
+        if (!Auth::check()) {
+            abort(401, 'Silakan login terlebih dahulu.');
+        }
+
+        $userId = Auth::id();
+        $isMember = $taskList->isMember($userId);
 
         if (!$isMember) {
-            abort(403, 'Anda bukan anggota dari Task List ini.');
+            // Memberikan pesan error spesifik jika 403
+            abort(403, "Anda (User ID: $userId) bukan pembuat maupun kolaborator dari Task List ini (Owner ID: $taskList->owner_id).");
         }
     }
 
@@ -33,9 +39,16 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'priority' => 'required|in:low,mid,high',
             'due_date' => 'required|date|after_or_equal:today',
+            'assignee_id' => 'nullable|exists:users,id',
         ], [
             'due_date.after_or_equal' => 'Batas waktu (Due date) tidak boleh di masa lalu.'
         ]);
+
+        if (!empty($validated['assignee_id'])) {
+            if (!$taskList->isMember($validated['assignee_id'])) {
+                return back()->withErrors(['assignee_id' => 'Anggota yang ditugaskan (Assignee) harus merupakan anggota dari Task List ini.']);
+            }
+        }
 
         $taskList->tasks()->create($validated);
 
@@ -45,18 +58,27 @@ class TaskController extends Controller
     public function edit(Task $task)
     {
         $this->authorizeAccess($task->taskList);
-        return view('tasks.edit', compact('task'));
+        $taskList = $task->taskList;
+        return view('tasks.edit', compact('task', 'taskList'));
     }
 
     public function update(Request $request, Task $task)
     {
-        $this->authorizeAccess($task->taskList);
+        $taskList = $task->taskList;
+        $this->authorizeAccess($taskList);
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'priority' => 'required|in:low,mid,high',
             'due_date' => 'required|date|after_or_equal:today',
+            'assignee_id' => 'nullable|exists:users,id',
         ]);
+
+        if (!empty($validated['assignee_id'])) {
+            if (!$taskList->isMember($validated['assignee_id'])) {
+                return back()->withErrors(['assignee_id' => 'Anggota yang ditugaskan (Assignee) harus merupakan anggota dari Task List ini.']);
+            }
+        }
 
         $task->update($validated);
 
