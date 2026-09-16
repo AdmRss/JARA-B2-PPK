@@ -32,10 +32,22 @@
                     <div>
                         <h3 class="text-lg font-bold text-slate-800">{{ $list->name }}</h3>
                         <p class="text-slate-500 text-sm">{{ $list->description ?? 'Tidak ada deskripsi' }}</p>
+                        <p class="text-slate-400 text-xs mt-1">{{ $list->owner_id === $userId ? 'Owner' : 'Collaborator' }}</p>
                     </div>
-                    <a href="{{ route('tasks.index', $list->id) }}" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition inline-flex items-center gap-1 shadow-sm">
-                        Kelola Tugas & Progres &rarr;
-                    </a>
+                    <div class="flex items-center gap-2">
+                        <a href="{{ route('tasks.index', $list->id) }}" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition inline-flex items-center gap-1 shadow-sm">
+                            Kelola Tugas & Progres &rarr;
+                        </a>
+                        @if($list->owner_id === $userId)
+                            <form action="/lists/{{ $list->id }}" method="POST" onsubmit="return confirm('Hapus proyek ini beserta semua tugas dan kolaborator?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="bg-red-50 hover:bg-red-100 text-red-700 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">
+                                    Hapus
+                                </button>
+                            </form>
+                        @endif
+                    </div>
                 </div>
 
                 <!-- Mini Progres Tugas (SRS-04) -->
@@ -61,15 +73,17 @@
                         </div>
                     </div>
 
-                    <form action="/lists/{{ $list->id }}/collaborators" method="POST" class="flex items-center gap-2 w-full md:w-auto">
-                        @csrf
-                        <select name="user_id" class="border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
-                            @foreach($users as $user)
-                                <option value="{{ $user->id }}">{{ $user->name }}</option>
-                            @endforeach
-                        </select>
-                        <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition whitespace-nowrap">Tambah Anggota</button>
-                    </form>
+                    @if($list->owner_id === $userId)
+                        <form action="/lists/{{ $list->id }}/collaborators" method="POST" class="flex items-center gap-2 w-full md:w-auto">
+                            @csrf
+                            <select name="user_id" class="border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                                @foreach($users as $user)
+                                    <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                @endforeach
+                            </select>
+                            <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition whitespace-nowrap">Tambah Anggota</button>
+                        </form>
+                    @endif
                 </div>
             </div>
             @endforeach
