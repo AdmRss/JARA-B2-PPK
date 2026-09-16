@@ -26,6 +26,9 @@ class TaskListController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+        ], [
+            'name.required' => 'Nama proyek wajib diisi.',
+            'name.max' => 'Nama proyek maksimal 255 karakter.',
         ]);
 
         TaskList::create([
@@ -33,27 +36,38 @@ class TaskListController extends Controller
             'description' => $validated['description'] ?? null,
             'owner_id' => 1 // Hardcode sementara untuk testing
         ]);
-        return back();
+        return back()->with('success', 'Proyek baru berhasil dibuat.');
     }
 
     public function addCollaborator(Request $request, TaskList $taskList) {
         $userId = 1;
 
-        abort_unless($taskList->isOwner($userId), 403);
+        if (! $taskList->isOwner($userId)) {
+            return back()->withErrors([
+                'authorization' => 'Aksi ditolak. Hanya owner proyek yang boleh menambahkan anggota.',
+            ]);
+        }
 
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
+        ], [
+            'user_id.required' => 'Pilih anggota yang ingin ditambahkan.',
+            'user_id.exists' => 'Anggota yang dipilih tidak valid.',
         ]);
 
         // Attach user ke pivot table
         $taskList->collaborators()->syncWithoutDetaching([$validated['user_id']]);
-        return back();
+        return back()->with('success', 'Anggota berhasil ditambahkan ke proyek.');
     }
 
     public function destroy(TaskList $taskList) {
         $userId = 1;
 
-        abort_unless($taskList->isOwner($userId), 403);
+        if (! $taskList->isOwner($userId)) {
+            return back()->withErrors([
+                'authorization' => 'Aksi ditolak. Hanya owner proyek yang boleh menghapus proyek.',
+            ]);
+        }
 
         DB::transaction(function () use ($taskList) {
             $taskList->collaborators()->detach();
@@ -61,6 +75,6 @@ class TaskListController extends Controller
             $taskList->delete();
         });
 
-        return redirect('/lists');
+        return redirect('/lists')->with('success', 'Proyek berhasil dihapus.');
     }
 }
