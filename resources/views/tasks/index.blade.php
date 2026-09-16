@@ -92,6 +92,19 @@
                     </div>
                 </div>
 
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tugaskan Ke (Opsional)</label>
+                    <select name="assignees[]" multiple class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white h-24">
+                        @foreach($members as $member)
+                            <option value="{{ $member->id }}"
+                                {{ in_array($member->id, old('assignees', [])) ? 'selected' : '' }}>
+                                {{ $member->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="text-xs text-slate-400 mt-1">Tahan Ctrl/Cmd untuk memilih beberapa anggota.</p>
+                </div>
+
                 <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg text-sm transition shadow-sm">
                     Simpan Tugas
                 </button>
@@ -157,6 +170,17 @@
                                 @else
                                     <span class="text-slate-400 italic">Tidak ada</span>
                                 @endif
+                            </div>
+
+                            <!-- Assignees Badge (SRS-03) -->
+                            <div class="flex flex-wrap gap-1 mt-1">
+                                @forelse($task->assignedUsers as $assignee)
+                                    <span class="bg-indigo-50 text-indigo-700 text-xs px-2 py-0.5 rounded-full border border-indigo-100 font-medium">
+                                        {{ $assignee->name }}
+                                    </span>
+                                @empty
+                                    <span class="text-xs text-slate-400 italic">Belum ditugaskan</span>
+                                @endforelse
                             </div>
                         </div>
                     </div>

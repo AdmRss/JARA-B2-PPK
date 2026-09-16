@@ -95,7 +95,7 @@
                     </div>
                 </div>
 
-                <div class="mt-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="mt-4 pt-4 border-t border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Kolaborator:</span>
                         <div class="flex flex-wrap gap-1 mt-1">
